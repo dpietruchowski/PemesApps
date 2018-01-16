@@ -1,0 +1,23 @@
+{% extends "navigation/template.html" %}
+
+{% block navigate %}
+    <div class="container-fluid">
+        <nav class="col-sm-3 col-md-2 d-none d-sm-block bg-light sidebar">
+          <ul class="nav nav-pills flex-column">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">New product<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Open product</a>
+            </li>
+          </ul>
+        </nav>
+				<a id="sdf" class="related-widget-wrapper-link add-related" href="/valuation" title="dasfas">
+					Addd
+				</a>
+    </div>
+{% endblock %}
+
+{% block content %}
+	<h1>Product Manager</h1>
+{% endblock %}

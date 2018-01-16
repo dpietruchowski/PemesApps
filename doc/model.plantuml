@@ -1,0 +1,19 @@
+@startuml
+hide methods
+package model {
+    class Package {
+        float price;
+        int amount;
+    }
+    class Product {
+        Package package;
+        string name;
+    }
+    class Order {
+        Date date;
+    }
+
+    Product::package --> Package
+}
+
+@enduml
