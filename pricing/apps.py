@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ProductmanagerConfig(AppConfig):
-    name = 'Valuation'
+    name = 'pricing'

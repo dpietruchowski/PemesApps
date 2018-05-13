@@ -1,0 +1,142 @@
+{% extends "template.html" %}
+
+    {% load staticfiles %}
+
+{% block navigation %}
+{% include "pricing/navigation.html" %}
+{% endblock %}
+
+{% block content %}
+  <div class="row container">
+    <div class="col-md-6">
+      <div class="card bg-light">
+        <div class="text-center">
+          <form method="POST" class="post-form" id="form_set" @submit="checkForm">
+            {% csrf_token %}
+            <div class="card-body">
+              <div style="float:left;"><p class="card-text" >Nazwa</p></div>
+              <div style="float:right;"><p class="card-text" >{{ form.name }}</p></div>
+            </div>
+            <div class="card-body">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">Nazwa</th>
+                    <th scope="col">Ilosc</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody id="my_bd">
+                  <tr v-for="row in rows">
+                    <td>
+                      [[ row.name ]]
+                      <input :id="getFormId(row, cols[1])"
+                             :name="getFormName(row, cols[1])"
+                             type="hidden" :value="row.pk" />
+                      <input :id="getFormId(row, cols[0])"
+                             :name="getFormName(row, cols[0])"
+                             type="hidden" :value="row.name" />
+                    </td>
+                    <td>
+                      <input min="0" :id="getFormId(row, cols[2])"
+                            :name="getFormName(row, cols[2])"
+                            type="number" v-model="row.amount" @change="amountChange(row)"/>
+                    </td>
+                    <td>
+                      <a class="btn" v-on:click="remove(row)"><i class="fas fa-trash"></i></a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <button type="submit" class="save btn btn-default">Zapisz</button>
+              <input type="hidden" name="form-TOTAL_FORMS" :value="total_forms" id="id_form-TOTAL_FORMS" />
+              <input type="hidden" name="form-INITIAL_FORMS" :value="initial_forms" id="id_form-INITIAL_FORMS" />
+              <input type="hidden" name="form-MIN_NUM_FORMS" :value="min_num_forms" id="id_form-MIN_NUM_FORMS" />
+              <input type="hidden" name="form-MAX_NUM_FORMS" :value="max_num_forms" id="id_form-MAX_NUM_FORMS" />
+            </div>
+          </form>
+          <div id="order">
+            <h3>Wszystkie produkty</h3>
+            <div class="card-body">
+              <div style="float:left;"><p class="card-text" >Cena</p></div>
+              <div style="float:right;"><p class="card-text" >[[ price ]]</p></div>
+            </div>
+            <div class="card-body">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">Nazwa</th>
+                    <th scope="col">Cena detaliczna</th>
+                    <th scope="col">Ilosc</th>
+                    <th scope="col">Cena</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in rows">
+                    <td>
+                      [[ row.name ]]
+                    </td>
+                    <td>
+                      [[ row.price ]]
+                    </td>
+                    <td>
+                      [[ row.amount ]]
+                    </td>
+                    <td>
+                      [[ row.sum_price ]]
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="product_search" class="col-md-6">
+      <div class="card bg-light text-center">
+        <div class="card-body">
+          <input class="card-body" type="text" maxlength="130" v-model="search"/>
+        </div>
+        <div class="card-body">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Nazwa</th>
+                <th scope="col">Cena</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody id="my_bd">
+              <tr v-for="row in rows">
+                <td>
+                  [[ row.id ]]
+                </td>
+                <td>
+                  [[ row.name ]]
+                </td>
+                <td>
+                  [[ row.price ]]
+                </td>
+                <td>
+                  <a class="btn" v-on:click="add(row)" 
+                                 v-on:mouseenter="setActive(row, true)" 
+                                 v-on:mouseleave="setActive(row, false)"
+                                 v-bind:class="{mybtn_active: row.active}">
+                    <i class="fas fa-plus-square"></i>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'js/edit_order.js' %}"></script>
+{% endblock %}
+
