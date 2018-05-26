@@ -1,0 +1,21 @@
+{% extends "template.html" %}
+{% load staticfiles %}
+
+{% block navigation %}
+{% include "pricing/navigation.html" %}
+{% endblock %}
+
+{% block content %}
+<div id="mmodal">
+  <modal :id="'modal'">sad</modal>
+</div>
+<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#modal">Open Modal</button>
+
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'vue/modal-component.js' %}"></script>
+  <script>
+    new Vue({el: '#mmodal'})
+  </script>
+{% endblock %}

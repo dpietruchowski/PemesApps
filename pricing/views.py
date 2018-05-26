@@ -8,7 +8,9 @@ from . import models
 from . import forms as myforms
 
 def index(request):
-    return render(request, 'pricing/index.html')
+    return render(request, 'pricing/index.html', {
+        'pricing_active': 'active'
+    })
 
 def post_product(request, DependencyFormSet, pk):
     form = myforms.ProductForm(request.POST)
@@ -20,7 +22,7 @@ def post_product(request, DependencyFormSet, pk):
         name = form.cleaned_data['name']
         price = form.cleaned_data['price']
         for f in formset:
-            product_id = f.cleaned_data['product_id']
+            product_id = f.cleaned_data['id']
             amount = f.cleaned_data['amount']
             dependency.update({product_id: amount})
     else:
@@ -36,7 +38,11 @@ def post_product(request, DependencyFormSet, pk):
             )
         else:
             product = models.Product.objects.get(pk=pk)
-        product.update_children(dependency)
+            product.name = name
+            product.price = price
+            product.save()
+        if not product.update_children(dependency):
+            return HttpResponse("Nie udalo sie: jest zaleznosc")
         return redirect(products)
 
     return HttpResponse("Nie udalo sie")
@@ -55,7 +61,7 @@ def edit_product(request, pk):
         children_form_set = []
         for child in product.children.all():
             children_form_set.append({
-                'product_id': child.child.pk,
+                'id': child.child.pk,
                 'name': child.child.name,
                 'amount': child.amount
             })
@@ -63,6 +69,7 @@ def edit_product(request, pk):
     return render(request, 'pricing/edit_product.html', {
         'form' : form, 
         'formset': formset,
+        'pricing_active': 'active',
     })
 
 def new_product(request):
@@ -73,13 +80,19 @@ def new_product(request):
     form = myforms.ProductForm()
     return render(request, 'pricing/edit_product.html', {
         'form' : form,
+        'pricing_active': 'active',
+        'new_product_active': 'active',
     })
 
 def products(request):
     paginator = Paginator(models.Product.objects.all().order_by('-name'), 20)
     page = request.GET.get('page')
     product_list = paginator.get_page(page)
-    return render(request, 'pricing/product_list.html', {'product_list' : product_list})
+    return render(request, 'pricing/product_list.html', {
+        'product_list' : product_list,
+        'pricing_active': 'active',
+        'products_active': 'active',
+    })
 
 def search_products(request):
     results = []
@@ -87,11 +100,23 @@ def search_products(request):
         if u'query' in request.GET:
             value = request.GET[u'query']
             model_results = models.Product.objects.filter(name__icontains=value)
-            results = [{"id": str(x.id), "name": x.name, "price": str(x.price)} for x in model_results]
+            results = [{"id": str(x.id), 
+                        "name": x.name, 
+                        "price": str(x.price),
+                        "n_dependency": str(x.children.all().count())} 
+                        for x in model_results]
     return JsonResponse(json.dumps(results[:10]), safe=False)
 
 def new_order(request):
     return render(request, 'pricing/edit_order.html', {
+        'pricing_active': 'active',
+        'order_active': 'active',
+    })
+
+def order_history(request):
+    return render(request, 'pricing/order_history.html', {
+        'pricing_active': 'active',
+        'order_history_active': 'active',
     })
 
 def dependency(request):

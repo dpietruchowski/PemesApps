@@ -1,84 +1,126 @@
 from datetime import date
+from enum import Enum
 
 from django.db import models
 from django.utils import timezone
 
-class Product(models.Model):
+import pdb
+
+class Group(Enum):
+    Mechanical = 0
+    Electrical = 1
+
+    @classmethod
+    def choices(cls):
+        return tuple((x.name, x.value) for x in cls)
+
+    def __int__(self):
+        return self.value
+
+class Element(models.Model):
     name = models.CharField(max_length=30)
+    group = models.IntegerField(choices=Group.choices(), default=Group.Electrical)
+    is_component = models.BooleanField()
+
+    def __init__(self, *args, **kwargs):
+        super(Element, self).__init__(*args, **kwargs)
+        if not self.pk and not self.is_component:
+            self.is_component = self.IS_COMPONENT
+
+
+class Product(Element):
+    IS_COMPONENT = False
+    element = models.OneToOneField(
+        to=Element, 
+        parent_link=True, 
+        related_name='product',
+        on_delete=models.CASCADE
+    )
     price = models.DecimalField(
         decimal_places=2,
-        max_digits=15
+        max_digits=15,
+        default=0
     )
 
+
+class Component(Element):
+    IS_COMPONENT = True
+    element = models.OneToOneField(
+        to=Element, 
+        parent_link=True, 
+        related_name='component',
+        on_delete=models.CASCADE
+    )
+    project_name = models.CharField(max_length=30, default="")
+
     def add_child(self, child, amount):
-        self.children.create(
+        self.relationship.create(
             child=child,
             amount=amount
         )
 
     def set_child(self, child, amount):
-        child_dependency = self.children.filter(child=child).first()
-        child_dependency.amount = amount
-        child_dependency.save()
+        relation = self.relationship.filter(child=child).first()
+        relation.amount = amount
+        relation.save()
 
     def delete_child(self, child):
-        self.children.filter(child=child).delete()
+        self.relationship.filter(child=child).delete()
 
     def update_child(self, child, amount):
-        if self.children.filter(child=child).exists():
+        if self.relationship.filter(child=child).exists():
             self.set_child(child, amount)
         else:
             self.add_child(child, amount)
 
-    def update_children(self, children_dict):
-        old_children = set()
+    def update_children(self, relationship_dict):
+        old_children = dict()
         new_children = set()
-        for child in self.children.all():
-            old_children.update({child.child.pk})
+        for relation in self.relationship.all():
+            old_children.update({relation.child.pk: relation.amount})
 
-        for id, amount in children_dict.items():
-            new_children.update({id})
-            self.update_child(Product.objects.get(pk=id), amount)
+        for child_id, amount in relationship_dict.items():
+            new_children.update({child_id})
+            child = Element.objects.get(pk=child_id)
+            self.update_child(child, amount)
 
-        for child_id in old_children.difference(new_children):
-            self.delete_child(Product.objects.get(pk=child_id))
+        for child_id in set(old_children.keys()).difference(new_children):
+            self.delete_child(Element.objects.get(pk=child_id))
+
+        if self.has_cycle(set()):
+            self.update_children(old_children)
+            return False
+        
+        return True
 
     def get_full_dependency(self, amount):
         full_dependency = [{"amount": amount, "object": self}]
-        for child in self.children.all():
+        for child in self.relationship.all():
             full_dependency.extend(child.child.get_full_dependency(child.amount * amount))
         return full_dependency
 
-class ProductDependency(models.Model):
+    def has_cycle(self, visited):
+        #pdb.set_trace()
+        for relation in self.relationship.all():
+            if relation.pk in visited:
+                return True
+            visited.add(relation.pk)
+            if relation.child.is_component:
+                if relation.child.component.has_cycle(visited):
+                    return True
+        return False
+
+
+class ElementRelationship(models.Model):
     parent = models.ForeignKey(
-        Product,
+        Component,
         on_delete=models.CASCADE,
-        related_name="children"
+        related_name="relationship"
     )
     child = models.ForeignKey(
-        Product,
+        Element,
         on_delete=models.CASCADE,
-        related_name="parents"
     )
     amount = models.IntegerField()
-
-class Order(models.Model):
-    name = models.CharField(max_length=30)
-    date = models.DateField(default=date.today)
-    datetime = models.DateTimeField(default=timezone.now)
-
-    def add_product(self, product):
-        pass
-
-class OrderProduct(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="products"
-    )
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name="orders"
-    )
-    amount = models.IntegerField()
+    class Meta:
+        unique_together = ('parent', 'child')

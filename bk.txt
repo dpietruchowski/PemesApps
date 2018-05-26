@@ -1,0 +1,50 @@
+from datetime import date
+from enum import Enum
+
+from django.db import models
+from django.utils import timezone
+
+import pdb
+
+class Group(Enum):
+    Mechanical = 0
+    Electrical = 1
+
+    @classmethod
+    def choices(cls):
+        return tuple((x.name, x.value) for x in cls)
+
+    def __int__(self):
+        return self.value
+
+
+class Element(models.Model):
+    name = models.CharField(max_length=30)
+    group = models.IntegerField(choices=Group.choices(), default=Group.Electrical)
+
+
+class Product(Element):
+    price = models.DecimalField(
+        decimal_places=2,
+        max_digits=15,
+        default=0
+    )
+
+
+class Component(models.Model):
+    project_name = models.CharField(max_length=30, default="")
+
+
+class ElementRelationship(models.Model):
+    parent = models.ForeignKey(
+        Element,
+        on_delete=models.CASCADE,
+        related_name="relationship"
+    )
+    child = models.ForeignKey(
+        Element,
+        on_delete=models.CASCADE,
+    )
+    amount = models.IntegerField()
+    class Meta:
+        unique_together = ('parent', 'child')
