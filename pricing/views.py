@@ -1,143 +1,79 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
 from django import forms
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
+from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteView
+from django.views.generic import View
+from django.views.decorators.csrf import csrf_exempt
 import json
 import pdb
-from . import models
-from . import forms as myforms
+from .forms import ProductForm
+from .models import Product, Group
 
 def index(request):
     return render(request, 'pricing/index.html', {
         'pricing_active': 'active'
     })
 
-def post_product(request, DependencyFormSet, pk):
-    form = myforms.ProductForm(request.POST)
-    formset = DependencyFormSet(request.POST)
-    valid = False
-    dependency = {}
-    if formset.is_valid() and form.is_valid():
-        valid = True
-        name = form.cleaned_data['name']
-        price = form.cleaned_data['price']
-        for f in formset:
-            product_id = f.cleaned_data['id']
-            amount = f.cleaned_data['amount']
-            dependency.update({product_id: amount})
-    else:
-        for f in formset:
-            if not f.is_valid():
-                print(f.errors)
+class ProductView(FormView):
+    template_name = 'pricing/edit_product.html'
+    model = Product
+    form_class = ProductForm
+    title = "Dodaj produkt"
+    active = 'new_product_active'
+    success_url = '/pricing/product/list'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = self.title
+        context['pricing_active'] = 'active'
+        context['new_product_active'] = 'active'
+        if 'pk' in self.kwargs:
+            context['pk'] = int(self.kwargs['pk'])
+        return context
 
-    if valid:
-        if pk is None:
-            product = models.Product.objects.create(
-                name=name,
-                price=price
-            )
-        else:
-            product = models.Product.objects.get(pk=pk)
-            product.name = name
-            product.price = price
-            product.save()
-        if not product.update_children(dependency):
-            return HttpResponse("Nie udalo sie: jest zaleznosc")
-        return redirect(products)
+    def form_valid(self, form):
+        print("valid")
+        form.save()
+        return super().form_valid(form)
 
-    return HttpResponse("Nie udalo sie")
+    def form_invalid(self, form):
+        print(form.errors)
+        return super().form_invalid(form)
 
-def edit_product(request, pk):
-    DependencyFormSet = forms.formset_factory(myforms.DependencyForm, extra=0)
-    if request.method == 'POST':
-        return post_product(request, DependencyFormSet, pk)
-    else:
-        product = get_object_or_404(models.Product, pk=pk)
-        #print(product.get_full_dependency())
-        form = myforms.ProductForm(initial={
-            'name': product.name,
-            'price': product.price
-        })
-        children_form_set = []
-        for child in product.children.all():
-            children_form_set.append({
-                'id': child.child.pk,
-                'name': child.child.name,
-                'amount': child.amount
-            })
-        formset = DependencyFormSet(initial=children_form_set)
-    return render(request, 'pricing/edit_product.html', {
-        'form' : form, 
-        'formset': formset,
-        'pricing_active': 'active',
-    })
+    def get_form_kwargs(self):
+        form_kwargs = super().get_form_kwargs()
+        if 'pk' in self.kwargs:
+            form_kwargs['instance'] = self.model.objects.get(pk=int(self.kwargs['pk']))
+        return form_kwargs
 
-def new_product(request):
-    DependencyFormSet = forms.formset_factory(myforms.DependencyForm, extra=0)
-    if request.method == 'POST':
-        return post_product(request, DependencyFormSet, None)
-    formset = DependencyFormSet()
-    form = myforms.ProductForm()
-    return render(request, 'pricing/edit_product.html', {
-        'form' : form,
-        'pricing_active': 'active',
-        'new_product_active': 'active',
-    })
+@csrf_exempt 
+def delete_product(request, pk):
+    result = 'failed'
+    if request.method == "DELETE":
+        product = Product.objects.get(pk=pk)
+        product.delete()
+        result = 'success'
+    return JsonResponse(json.dumps([{'result': result}]), safe=False)
 
-def products(request):
-    paginator = Paginator(models.Product.objects.all().order_by('-name'), 20)
-    page = request.GET.get('page')
-    product_list = paginator.get_page(page)
+
+def product_list(request):
     return render(request, 'pricing/product_list.html', {
-        'product_list' : product_list,
         'pricing_active': 'active',
         'products_active': 'active',
     })
+
 
 def search_products(request):
     results = []
     if request.method == "GET":
         if u'query' in request.GET:
             value = request.GET[u'query']
-            model_results = models.Product.objects.filter(name__icontains=value)
+            model_results = Product.objects.filter(name__icontains=value)
             results = [{"id": str(x.id), 
                         "name": x.name, 
                         "price": str(x.price),
-                        "n_dependency": str(x.children.all().count())} 
+                        "group": str(Group(x.group))} 
                         for x in model_results]
     return JsonResponse(json.dumps(results[:10]), safe=False)
-
-def new_order(request):
-    return render(request, 'pricing/edit_order.html', {
-        'pricing_active': 'active',
-        'order_active': 'active',
-    })
-
-def order_history(request):
-    return render(request, 'pricing/order_history.html', {
-        'pricing_active': 'active',
-        'order_history_active': 'active',
-    })
-
-def dependency(request):
-    results = []
-    if request.method == "GET":
-        amount = 1
-        if u'amount' in request.GET:
-            amount = int(request.GET[u'amount'])
-        if u'id' in request.GET:
-            id = request.GET[u'id']
-            try:
-                product = models.Product.objects.get(pk=int(id))
-            except models.Product.DoesNotExist:
-                return JsonResponse(json.dumps([]), safe=False)
-            for product_dep in product.get_full_dependency(amount):
-                product_amount = product_dep["amount"]
-                child_product = product_dep["object"]
-                results.append({
-                    "pk": child_product.pk,
-                    "name": child_product.name,
-                    "price": str(child_product.price),
-                    "amount": str(product_amount)
-                })
-    return JsonResponse(json.dumps(results), safe=False)

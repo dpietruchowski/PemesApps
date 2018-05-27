@@ -1,4 +1,4 @@
-var product_search_component = {
+/*var product_search_component = {
     delimiters: ['[[', ']]'],
     props: {
         cols: Array,
@@ -49,4 +49,15 @@ var psearch = new Vue({
             }
         }
     }
-})
+})*/
+
+
+function delete_product(id) {
+    fetch("/pricing/product/" + id + "/delete", {
+        method: 'DELETE'
+    })
+    .then(resp => resp.json())
+    .then(resp => {
+        location.href="/pricing/product/list";
+    })
+}

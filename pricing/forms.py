@@ -1,16 +1,7 @@
 from django import forms
+from .models import Product
 
-class ProductForm(forms.Form):
-    name = forms.CharField(
-        max_length=30, 
-        widget=forms.TextInput(attrs={'class': 'form-control'}))
-    price = forms.DecimalField(
-        decimal_places=2,
-        max_digits=15,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0})
-    )
-
-class DependencyForm(forms.Form):
-    id = forms.IntegerField()
-    name = forms.CharField(max_length=30)
-    amount = forms.IntegerField()
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'group', 'price']

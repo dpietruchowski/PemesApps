@@ -3,6 +3,7 @@ from enum import Enum
 
 from django.db import models
 from django.utils import timezone
+from django.core.validators import MinValueValidator
 
 import pdb
 
@@ -12,10 +13,13 @@ class Group(Enum):
 
     @classmethod
     def choices(cls):
-        return tuple((x.name, x.value) for x in cls)
+        return tuple((x.value, x.name) for x in cls)
 
     def __int__(self):
         return self.value
+
+    def __str__(self):
+        return self.name
 
 class Element(models.Model):
     name = models.CharField(max_length=30)
@@ -39,8 +43,13 @@ class Product(Element):
     price = models.DecimalField(
         decimal_places=2,
         max_digits=15,
-        default=0
-    )
+        default=0,
+        validators=[MinValueValidator(0)]
+    ) 
+    
+    def get_all_products(self, amount):
+        products = [{"amount": amount, "object": self}]
+        return products
 
 
 class Component(Element):
@@ -93,11 +102,23 @@ class Component(Element):
         
         return True
 
-    def get_full_dependency(self, amount):
-        full_dependency = [{"amount": amount, "object": self}]
-        for child in self.relationship.all():
-            full_dependency.extend(child.child.get_full_dependency(child.amount * amount))
-        return full_dependency
+    def get_all_products(self, amount):
+        products = []
+        for relation in self.relationship.all():
+            child = relation.child
+            if child.is_component:
+                products.extend(
+                    child.component.get_all_products(
+                        relation.amount * amount
+                    )
+                )
+            else:
+                products.extend(
+                    child.product.get_all_products(
+                        relation.amount * amount
+                    )
+                )
+        return products
 
     def has_cycle(self, visited):
         #pdb.set_trace()

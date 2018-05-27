@@ -26,14 +26,14 @@ var psearch = new Vue({
             {name: 'id', display: 'Id'},
             {name: 'name', display: 'Nazwa'},
             {name: 'price', display: 'Cena'},
-            {name: 'n_dependency', display: 'Liczba produktów'},
+            {name: 'group', display: 'Grupa'},
         ],
         buttons: ['edit'],
         callbacks: {
             edit: function (row) {
                 console.log(JSON.stringify(row));
-                location.href="product/" + row.id + "/edit";
-            }
+                location.href="/pricing/product/" + row.id + "/edit";
+            },
         }
     }
 })

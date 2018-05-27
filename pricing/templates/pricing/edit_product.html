@@ -7,52 +7,46 @@
 {% endblock %}
 
 {% block content %}
-  <div class="row container">
-    <div class="col-md-6">
-      <div class="card bg-light">
-        <div class="text-center">
-          <form method="POST" class="post-form" id="form_set" @submit="checkForm">
-            {% csrf_token %}
-            <div class="card-body">
-              <div style="float:left;"><p class="card-text" >Nazwa</p></div>
-              <div style="float:right;"><p class="card-text" >{{ form.name }}</p></div>
-            </div>
-            <div class="card-body">
-              <div style="float:left;"><p class="card-text" >Cena</p></div>
-              <div style="float:right;"><p class="card-text" >{{ form.price }}</p></div>
-            </div>
-            <div id="product_formset" class="card-body">
-              <dynamic-formset ref="df"
-                               :form_prefix="prefix"
-                               :cols="cols">
-              </dynamic-formset>
-              <button type="submit" class="save btn btn-default">Zapisz</button>
-            </div>
-          </form>
-        </div>
+    <div class="card bg-light mx-auto" style="max-width: 30rem;">
+      <div class="text-center">
+        <form method="POST" class="post-form" @submit="checkForm">
+          {% csrf_token %}
+          <div class="card-body">
+            <h4 class="card-title">{{ title }}</h4>
+          </div>
+          <div class="card-body">
+            <div style="float:left;"><p class="card-text" >Nazwa</p></div>
+            <div style="float:right;"><p class="card-text" >{{ form.name }}</p></div>
+          </div>
+          <div class="card-body">
+            <div style="float:left;"><p class="card-text" >Cena</p></div>
+            <div style="float:right;"><p class="card-text" >{{ form.price }}</p></div>
+          </div>
+          <div class="card-body">
+            <div style="float:left;"><p class="card-text" >Grupa</p></div>
+            <div style="float:right;"><p class="card-text" >{{ form.group }}</p></div>
+          </div>
+          <div class="card-body">
+            <button type="submit" class="save btn btn-default">Zapisz</button>
+            {% if pk is not defined %}
+            <button type="button" class="save btn btn-default" onclick="delete_product({{ pk }})">Usuń</button>
+            {% endif %}
+          </div>
+        </form>
       </div>
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+</ul>
+{% endif %}
     </div>
-    <div id="product_search" class="col-md-6">
-      <product-search :cols="cols"
-                      :buttons="buttons"
-                      :callbacks="callbacks">
-      </product-search>
-    </div>
-  </div>
 {% endblock %}
 
 {% block js %}
     <script src="{% static 'vue/search-component.js' %}"></script>
     <script src="{% static 'vue/dynamic-formset-component.js' %}"></script>
     <script src="{% static 'js/edit_product.js' %}"></script>
-    <script>
-      {% for form in formset %}
-        dform_set.$refs.df.add({
-                      id: {{ form.id.value }}, 
-                      name: "{{ form.name.value }}", 
-                      amount: {{ form.amount.value }}
-                    });
-      {% endfor %}
-    </script>
 {% endblock %}
 

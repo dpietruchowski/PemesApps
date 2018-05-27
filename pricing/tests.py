@@ -1,3 +1,4 @@
+import pdb
 from django.test import TestCase
 from .models import Group, Element, Product, Component
 
@@ -142,3 +143,62 @@ class UpdateChildrenTestCase(TestCase):
         c1.add_child(c2, 10)
         relationship_dict = { c1.pk: 11 }
         c2.update_children(relationship_dict)
+        self.assertEqual(c1.has_cycle(set()), False)
+        self.assertEqual(c1.relationship.all().count(), 1)
+        self.assertEqual(c2.relationship.all().count(), 0)
+
+
+class GetAllProductTestCase(TestCase):
+    def setUp(self):
+        Product.objects.create(name="P1")
+        Product.objects.create(name="P2")
+        Product.objects.create(name="P3")
+        Component.objects.create(name="C1")
+        Component.objects.create(name="C2")
+        Component.objects.create(name="C3")
+
+    def test_1(self):
+        p1 = Product.objects.get(name="P1")
+        p2 = Product.objects.get(name="P2")
+        p3 = Product.objects.get(name="P3")
+        c1 = Component.objects.get(name="C1")
+        c2 = Component.objects.get(name="C2")
+        c3 = Component.objects.get(name="C3")
+        relationship_dict1 = {
+            c2.pk: 14,
+            c3.pk: 15,
+        }
+        relationship_dict2 = {
+            p1.pk: 10,
+            p2.pk: 11,
+        }
+        relationship_dict3 = {
+            p3.pk: 12,
+        }
+        c1.update_children(relationship_dict1)
+        c2.update_children(relationship_dict2)
+        c3.update_children(relationship_dict3)
+        self.assertEqual(c1.relationship.all().count(), 2)
+        self.assertEqual(c2.relationship.all().count(), 2)
+        self.assertEqual(c3.relationship.all().count(), 1)
+        products1 = c1.get_all_products(1)
+        products2 = c2.get_all_products(1)
+        products3 = c3.get_all_products(1)
+        self.assertEqual(len(products3), 1)
+        self.assertEqual(products3[0]['object'].name, "P3")
+        self.assertEqual(products3[0]['amount'], 12)
+        self.assertEqual(len(products2), 2)
+        self.assertEqual(products2[0]['object'].name, "P1")
+        self.assertEqual(products2[0]['amount'], 10)
+        self.assertEqual(products2[1]['object'].name, "P2")
+        self.assertEqual(products2[1]['amount'], 11)
+        self.assertEqual(len(products1), 3)
+        self.assertEqual(products1[0]['object'].name, "P1")
+        self.assertEqual(products1[0]['amount'], 140)
+        self.assertEqual(products1[1]['object'].name, "P2")
+        self.assertEqual(products1[1]['amount'], 154)
+        self.assertEqual(products1[2]['object'].name, "P3")
+        self.assertEqual(products1[2]['amount'], 180)
+
+
+    
