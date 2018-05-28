@@ -3,20 +3,56 @@ from django.urls import reverse_lazy
 from django import forms
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
-from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteView
+from django.views.generic.edit import (
+    ModelFormMixin, 
+    ProcessFormView, 
+    SingleObjectTemplateResponseMixin, 
+)
+from django.views.generic import TemplateView as GenericTemplateView
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 import json
 import pdb
-from .forms import ProductForm
-from .models import Product, Group
+from .forms import ProductForm, ComponentForm
+from .models import Product, Group, Component, ElementRelationship
 
 def index(request):
     return render(request, 'pricing/index.html', {
         'pricing_active': 'active'
     })
 
-class ProductView(FormView):
+class BaseObjectView(ModelFormMixin, ProcessFormView):
+    def set_object(self):
+        if self.kwargs.get(self.pk_url_kwarg, None) is not None:
+            self.object = self.get_object()
+        else:
+            self.object = None
+
+    def get(self, request, *args, **kwargs):
+        self.set_object()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.set_object()
+        return super().post(request, *args, **kwargs)
+        
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        return HttpResponseRedirect()
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pk = self.kwargs.get(self.pk_url_kwarg, None)
+        if pk is not None:
+            context['pk'] = pk
+        return context
+
+class ObjectView(SingleObjectTemplateResponseMixin, BaseObjectView):
+    template_name_suffix = '_form'
+
+
+class ProductView(ObjectView): 
     template_name = 'pricing/edit_product.html'
     model = Product
     form_class = ProductForm
@@ -28,41 +64,34 @@ class ProductView(FormView):
         context = super().get_context_data(**kwargs)
         context['title'] = self.title
         context['pricing_active'] = 'active'
-        context['new_product_active'] = 'active'
-        if 'pk' in self.kwargs:
-            context['pk'] = int(self.kwargs['pk'])
+        context[self.active] = 'active'
         return context
 
-    def form_valid(self, form):
-        print("valid")
-        form.save()
-        return super().form_valid(form)
 
-    def form_invalid(self, form):
-        print(form.errors)
-        return super().form_invalid(form)
+class ComponentView(ObjectView):
+    template_name = 'pricing/edit_component.html'
+    model = Component
+    form_class = ComponentForm
+    title = "Dodaj komponent"
+    active = 'new_component_active'
+    success_url = '/pricing/component/list'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = self.title
+        context['pricing_active'] = 'active'
+        context[self.active] = 'active'
+        return context
 
-    def get_form_kwargs(self):
-        form_kwargs = super().get_form_kwargs()
-        if 'pk' in self.kwargs:
-            form_kwargs['instance'] = self.model.objects.get(pk=int(self.kwargs['pk']))
-        return form_kwargs
-
-@csrf_exempt 
-def delete_product(request, pk):
-    result = 'failed'
-    if request.method == "DELETE":
-        product = Product.objects.get(pk=pk)
-        product.delete()
-        result = 'success'
-    return JsonResponse(json.dumps([{'result': result}]), safe=False)
-
-
-def product_list(request):
-    return render(request, 'pricing/product_list.html', {
-        'pricing_active': 'active',
-        'products_active': 'active',
-    })
+class TemplateView(GenericTemplateView):
+    template_name = ''
+    active = ''
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pricing_active'] = 'active'
+        context[self.active] = 'active'
+        return context
 
 
 def search_products(request):

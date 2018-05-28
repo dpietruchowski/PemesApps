@@ -50,11 +50,27 @@ var psearch = new Vue({
         }
     }
 })*/
-
+function getCookie(input) {
+    var cookies = document.cookie.split(';');
+    for (var i = 0; i < cookies.length; i++) {
+        var name = cookies[i].split('=')[0].toLowerCase();
+        var value = cookies[i].split('=')[1];
+        if (name === input) {
+            return value;
+        } else if (value === input) {
+            return name;
+        }
+    }
+    return "";
+};
 
 function delete_product(id) {
-    fetch("/pricing/product/" + id + "/delete", {
-        method: 'DELETE'
+    fetch("/pricing/product/" + id, {
+        method: 'DELETE',
+        credentials: "same-origin",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+        },
     })
     .then(resp => resp.json())
     .then(resp => {

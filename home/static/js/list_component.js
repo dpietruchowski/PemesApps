@@ -1,4 +1,4 @@
-var product_search_component = {
+var component_search_component = {
     delimiters: ['[[', ']]'],
     props: {
         cols: Array,
@@ -6,8 +6,8 @@ var product_search_component = {
         callbacks: Object
     },
     template: ` 
-        <search :title="'Lista produktów'"
-                :restapi="'/pricing/products?query='"
+        <search :title="'Lista komponentów'"
+                :restapi="'/pricing/component?query='"
                 :cols="cols"
                 :buttons="buttons"
                 :callbacks="callbacks">
@@ -16,23 +16,23 @@ var product_search_component = {
     `
 }
 
-var psearch = new Vue({
-    el: '#product_search',
+var csearch = new Vue({
+    el: '#component_search',
     components: {
-        'product-search': product_search_component
+        'component-search': component_search_component
     },
     data: {
         cols: [
             {name: 'id', display: 'Id'},
             {name: 'name', display: 'Nazwa'},
-            {name: 'price', display: 'Cena'},
+            {name: 'project_name', display: 'Projekt'},
             {name: 'group', display: 'Grupa'},
         ],
         buttons: ['edit'],
         callbacks: {
             edit: function (row) {
                 console.log(JSON.stringify(row));
-                location.href="/pricing/product/" + row.id + "/edit";
+                location.href="/pricing/component/" + row.id;
             },
         }
     }
