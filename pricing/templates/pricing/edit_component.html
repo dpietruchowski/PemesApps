@@ -27,6 +27,12 @@
             <div style="float:right;"><p class="card-text" >{{ form.group }}</p></div>
           </div>
           <div class="card-body">
+              {% for f in formset %}
+                {{ f.as_table }}
+              {% endfor %}
+              {{ formset.management_form }}
+          </div>
+          <div class="card-body">
             <button type="submit" class="save btn btn-default">Zapisz</button>
             {% if pk is not defined %}
             <button type="button" class="save btn btn-default" onclick="delete_component({{ pk }})">Usuń</button>
@@ -41,5 +47,7 @@
     <script src="{% static 'vue/dynamic-formset-component.js' %}"></script>
     <script src="{% static 'vue/dynamic-table-component.js' %}"></script>
     <script src="{% static 'js/edit_component.js' %}"></script>
+    <script>
+    </script>
 {% endblock %}
 

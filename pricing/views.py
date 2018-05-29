@@ -13,7 +13,12 @@ from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 import json
 import pdb
-from .forms import ProductForm, ComponentForm
+from .forms import (
+    ProductForm, 
+    ComponentForm, 
+    ComponentRelationshipForm,
+    get_all_fields
+)
 from .models import Product, Group, Component, ElementRelationship
 
 def index(request):
@@ -51,6 +56,60 @@ class BaseObjectView(ModelFormMixin, ProcessFormView):
 class ObjectView(SingleObjectTemplateResponseMixin, BaseObjectView):
     template_name_suffix = '_form'
 
+class ObjectSetView(ObjectView):
+    form_set_class = None
+    extra = 2
+    related_name = None
+
+    def formset_factory(self):
+        return forms.formset_factory(self.form_set_class, extra=self.extra)
+
+    def get_formset(self):
+        FormSet = self.formset_factory()
+        if self.object is None:
+            return FormSet()
+        else:
+            formset_list = []
+            related_query = getattr(self.object, self.related_name)
+            for relation in related_query.all():
+                form_relation = {}
+                pdb.set_trace()
+                for field in get_all_fields(self.form_set_class):
+                    form_relation.update({field: getattr(relation, field)})
+                formset_list.append(form_relation)
+            return FormSet(initial=formset_list)
+        
+    def get_formset_from_request(self):
+        FormSet = self.formset_factory()
+        return FormSet(self.request.POST)
+
+    def get_context_data(self, **kwargs,):
+        context = super().get_context_data(**kwargs)
+        context['formset'] = self.get_formset()
+        return context
+
+    def formset_valid(self, formset):
+        pass
+
+    def formset_invalid(self, formset):
+        for form in formset:
+            if not form.is_valid():
+                print(form.errors)
+
+    def form_valid(self, form):
+        formset = self.get_formset_from_request()
+        if formset.is_valid():
+            Response = super().form_valid(form)
+            self.formset_valid(formset)
+            return Response
+        else:
+            self.formset_invalid(formset)
+
+    def form_invalid(self, form):
+        formset = self.get_formset_from_request()
+        if not formset.is_valid():
+            self.formset_invalid(formset)
+
 
 class ProductView(ObjectView): 
     template_name = 'pricing/edit_product.html'
@@ -68,13 +127,15 @@ class ProductView(ObjectView):
         return context
 
 
-class ComponentView(ObjectView):
+class ComponentView(ObjectSetView):
     template_name = 'pricing/edit_component.html'
     model = Component
     form_class = ComponentForm
     title = "Dodaj komponent"
     active = 'new_component_active'
     success_url = '/pricing/component/list'
+    form_set_class = ComponentRelationshipForm
+    related_name = 'relationship'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -82,6 +143,13 @@ class ComponentView(ObjectView):
         context['pricing_active'] = 'active'
         context[self.active] = 'active'
         return context
+
+    def formset_valid(self, formset):
+        relationship = {}
+        for form in formset:
+            element_id = form.cleaned_data['element_id']
+            amount = form.cleaned_data['amount']
+            relationship.update({element_id: amount})
 
 class TemplateView(GenericTemplateView):
     template_name = ''

@@ -1,6 +1,9 @@
 import pdb
 from django.test import TestCase
+from django.test.client import RequestFactory
 from .models import Group, Element, Product, Component
+from .views import ObjectSetView
+from .forms import ComponentRelationshipForm, ComponentForm
 
 class ProductTestCase(TestCase):
     def setUp(self):
