@@ -7,7 +7,7 @@ var component_search_component = {
     },
     template: ` 
         <search :title="'Lista komponentów'"
-                :restapi="'/pricing/component?query='"
+                :restapi="'/pricing/components?query='"
                 :cols="cols"
                 :buttons="buttons"
                 :callbacks="callbacks">

@@ -41,7 +41,7 @@ Vue.component('dynamic-formset', {
                 return;
             }
             if (!Number.isInteger(row.id)) {
-                console.log("row.is is not an integer")
+                console.log("row.id is not an integer")
                 return;
             }
             if (this.existed_rows.has(row.id)) {
@@ -83,8 +83,9 @@ Vue.component('dynamic-formset', {
             <tbody>
                 <tr v-for="row in rows" :key="row.id">
                     <td v-for="col in cols" v-if="col.display">
-                        <span v-if="col.type == 'hidden'">[[ row[col.name] ]]</span>
-                        <input :id="getFormId(row, col)"
+                        <span v-if="col.type == 'hidden' || col.type == 'none'">[[ row[col.name] ]]</span>
+                        <input v-if="col.type != 'none'"
+                            :id="getFormId(row, col)"
                             :name="getFormName(row, col)"
                             :type="col.type" v-model="row[col.name]" :min=col.min />
                     </td>

@@ -1,4 +1,4 @@
-var psearch = new Vue({
+/*var psearch = new Vue({
     el: '#product_search',
     components: {
         'product-search': product_search_component
@@ -20,19 +20,23 @@ var psearch = new Vue({
             }
         }
     }
-})
-/*
+})*/
+
 var dform_set = new Vue({
     el: '#element_formset',
     data: {
         prefix: 'form',
         cols: [
             { name: 'id', type: 'hidden', display: 'Id' },
-            { name: 'name', type: 'hidden', display: 'Nazwa' },
+            { name: 'name', type: 'none', display: 'Nazwa' },
             { name: 'amount', type: 'number', display: 'Ilość', min: 0},
         ]
     }
-})*/
+})
+
+var smodal = new Vue({
+    el: '#search_modal'
+})
 
 function getCookie(input) {
     var cookies = document.cookie.split(';');
@@ -60,4 +64,8 @@ function delete_component(id) {
     .then(resp => {
         location.href="/pricing/component/list";
     })
+}
+
+function add_element() {
+    
 }

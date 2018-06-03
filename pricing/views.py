@@ -58,7 +58,7 @@ class ObjectView(SingleObjectTemplateResponseMixin, BaseObjectView):
 
 class ObjectSetView(ObjectView):
     form_set_class = None
-    extra = 2
+    extra = 0
     related_name = None
 
     def formset_factory(self):
@@ -83,7 +83,7 @@ class ObjectSetView(ObjectView):
         FormSet = self.formset_factory()
         return FormSet(self.request.POST)
 
-    def get_context_data(self, **kwargs,):
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['formset'] = self.get_formset()
         return context
@@ -147,9 +147,10 @@ class ComponentView(ObjectSetView):
     def formset_valid(self, formset):
         relationship = {}
         for form in formset:
-            element_id = form.cleaned_data['element_id']
+            element_id = form.cleaned_data['id']
             amount = form.cleaned_data['amount']
             relationship.update({element_id: amount})
+        self.object.update_children(relationship)
 
 class TemplateView(GenericTemplateView):
     template_name = ''
@@ -162,15 +163,41 @@ class TemplateView(GenericTemplateView):
         return context
 
 
-def search_products(request):
-    results = []
-    if request.method == "GET":
-        if u'query' in request.GET:
-            value = request.GET[u'query']
-            model_results = Product.objects.filter(name__icontains=value)
-            results = [{"id": str(x.id), 
-                        "name": x.name, 
-                        "price": str(x.price),
-                        "group": str(Group(x.group))} 
-                        for x in model_results]
-    return JsonResponse(json.dumps(results[:10]), safe=False)
+class QueryView(View):
+    queries = []
+    def get(self, request, *args, **kwargs):
+        avaiable = True
+        #pdb.set_trace()
+        for query in self.queries:
+            if not query in request.GET:
+                avaiable = False
+                break
+        if avaiable:
+            return self.search(request)
+        return JsonResponse(json.dumps([]), safe=False)
+
+
+class NameSearchView(QueryView):
+    queries = [u'query']
+    properties = []
+    model = None
+    def search(self, request):
+        value = request.GET[u'query']
+        model_results = self.model.objects.filter(name__icontains=value)
+        results = []
+        for obj in model_results:
+            obj_dict = {}
+            for prop in self.properties:
+                obj_dict.update({prop: str(getattr(obj, prop))})
+            results.append(obj_dict)
+        return JsonResponse(json.dumps(results[:10]), safe=False)
+
+
+class ProductSearchView(NameSearchView):
+    properties=['id', 'name', 'price', 'group']
+    model = Product
+
+
+class ComponentSearchView(NameSearchView):
+    properties=['id', 'name', 'project_name', 'group']
+    model = Component

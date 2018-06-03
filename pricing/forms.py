@@ -18,8 +18,6 @@ class ComponentForm(forms.ModelForm):
         model = Component
         fields = ['name', 'group', 'project_name']
 
-class ComponentRelationshipForm(forms.ModelForm):
-    element_id = forms.IntegerField(min_value=0)
-    class Meta:
-        model = ElementRelationship
-        fields = ['amount']
+class ComponentRelationshipForm(forms.Form):
+    id = forms.IntegerField(min_value=0)
+    amount = forms.IntegerField(min_value=0)
