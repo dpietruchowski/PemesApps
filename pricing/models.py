@@ -90,6 +90,7 @@ class Component(Element):
 
         for child_id, amount in relationship_dict.items():
             new_children.update({child_id})
+            print(relationship_dict)
             child = Element.objects.get(pk=child_id)
             self.update_child(child, amount)
 
@@ -143,5 +144,16 @@ class ElementRelationship(models.Model):
         on_delete=models.CASCADE,
     )
     amount = models.IntegerField()
+
+    def get_id(self):
+        return self.child.id
+
+    def get_name(self):
+        return self.child.name
+
+    def get_amount(self):
+        return self.amount
+
+
     class Meta:
         unique_together = ('parent', 'child')

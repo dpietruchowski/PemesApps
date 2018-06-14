@@ -20,4 +20,5 @@ class ComponentForm(forms.ModelForm):
 
 class ComponentRelationshipForm(forms.Form):
     id = forms.IntegerField(min_value=0)
+    name = forms.CharField(max_length=30)
     amount = forms.IntegerField(min_value=0)

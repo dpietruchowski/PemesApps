@@ -17,7 +17,6 @@ Vue.component('modal', {
                         <slot name="header"></slot>
                     </div>
                     <div class="modal-body">
-                        id
                         <slot></slot>
                     </div>
                 </div>

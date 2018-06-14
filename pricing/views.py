@@ -73,9 +73,8 @@ class ObjectSetView(ObjectView):
             related_query = getattr(self.object, self.related_name)
             for relation in related_query.all():
                 form_relation = {}
-                pdb.set_trace()
                 for field in get_all_fields(self.form_set_class):
-                    form_relation.update({field: getattr(relation, field)})
+                    form_relation.update({field: getattr(relation, 'get_' + field)()})
                 formset_list.append(form_relation)
             return FormSet(initial=formset_list)
         

@@ -34,15 +34,39 @@
           </div>
           <div class="card-body">
             <button type="submit" class="save btn btn-default">Zapisz</button>
-            <button type="button" class="save btn btn-default" data-toggle="modal" data-target="#smodal">Dodaj</button>
+            <button type="button" class="save btn btn-default" data-toggle="modal" data-target="#product_modal">Dodaj produkt</button>
+            <button type="button" class="save btn btn-default" data-toggle="modal" data-target="#component_modal">Dodaj komponent</button>
             {% if pk is not defined %}
             <button type="button" class="save btn btn-default" onclick="delete_component({{ pk }})">Usuń</button>
             {% endif %}
           </div>
         </form>
-        <div id="search_modal">
-            <modal :id="smodal">
-                dafd
+                <div id="product_search" class="container" style="max-width: 50rem;">
+                  <product-search :cols="cols"
+                                  :buttons="buttons"
+                                  :callbacks="callbacks">
+                  </product-search>
+                </div>
+        <div id="psearch_modal">
+            <modal :id="'product_modal'">
+                <template slot="header">
+                  Dodaj produkt
+                </template>
+                <product-search :cols="cols"
+                                :buttons="buttons"
+                                :callbacks="callbacks">
+                </product-search>
+            </modal>
+        </div>
+        <div id="csearch_modal">
+            <modal :id="'component_modal'">
+                <template slot="header">
+                  Dodaj komponent
+                </template>
+                <component-search :cols="cols"
+                                :buttons="buttons"
+                                :callbacks="callbacks">
+                </component-search>
             </modal>
         </div>
     </div>
@@ -50,13 +74,14 @@
 
 {% block js %}
     <script src="{% static 'vue/search-component.js' %}"></script>
+    <script src="{% static 'vue/product-search-component.js' %}"></script>
+    <script src="{% static 'vue/component-search-component.js' %}"></script>
     <script src="{% static 'vue/dynamic-formset-component.js' %}"></script>
     <script src="{% static 'vue/dynamic-table-component.js' %}"></script>
-    <script src="{% static 'vue/modal-component.js' %}"></script>
     <script src="{% static 'js/edit_component.js' %}"></script>
     <script>
       {% for f in formset %}
-        dform_set.$refs.df.add({'id': {{ f.id.value }}, 'name': 'asd', 'amount': {{ f.amount.value }} })
+        dform_set.$refs.df.add({'id': {{ f.id.value }}, 'name': '{{ f.name.value }}', 'amount': {{ f.amount.value }} })
       {% endfor %}
     </script>
 {% endblock %}
