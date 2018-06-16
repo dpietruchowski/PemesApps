@@ -1,0 +1,21 @@
+{% extends "template.html" %}
+{% load staticfiles %}
+
+{% block navigation %}
+{% include "pricing/navigation.html" %}
+{% endblock %}
+
+{% block content %}
+  <div id="project_search" class="container" style="max-width: 50rem;">
+    <project-search :cols="cols"
+                    :buttons="buttons"
+                    :callbacks="callbacks">
+    </project-search>
+  </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'vue/search-component.js' %}"></script>
+    <script src="{% static 'vue/project-search-component.js' %}"></script>
+    <script src="{% static 'js/list_project.js' %}"></script>
+{% endblock %}

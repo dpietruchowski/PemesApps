@@ -24,10 +24,21 @@ urlpatterns = [
 
   path('component/new', views.ComponentView.as_view(), name='new_component'),
 
+  path('project/list', 
+       views.TemplateView.as_view(template_name="pricing/list_project.html", active="projects_active"), 
+       name='project_list'),
+
+  path('project/<int:pk>/', 
+       views.ProjectView.as_view(title="Edytuj projekt"), 
+       name='edit_project'),
+
+  path('project/new', views.ProjectView.as_view(), name='new_project'),
+
   #path('new_order', views.new_order, name='new_order'),
   #path('order_history', views.order_history, name='order_history'),
   # REST API
   path('products', views.ProductSearchView.as_view(), name='products'),
   path('components', views.ComponentSearchView.as_view(), name='components'),
+  path('projects', views.ProjectSearchView.as_view(), name='projects'),
   #path('dependency', views.dependency, name='dependency'),
 ]

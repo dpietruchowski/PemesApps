@@ -17,9 +17,18 @@ from .forms import (
     ProductForm, 
     ComponentForm, 
     ComponentRelationshipForm,
+    ProjectForm,
+    ProjectComponentForm,
     get_all_fields
 )
-from .models import Product, Group, Component, ElementRelationship
+from .models import (
+    Product,
+    Group, 
+    Component, 
+    ElementRelationship,
+    Project,
+    ProjectComponent
+)
 
 def index(request):
     return render(request, 'pricing/index.html', {
@@ -151,6 +160,31 @@ class ComponentView(ObjectSetView):
             relationship.update({element_id: amount})
         self.object.update_children(relationship)
 
+class ProjectView(ObjectSetView):
+    template_name = 'pricing/edit_project.html'
+    model = Project
+    form_class = ProjectForm
+    title = "Dodaj projekt"
+    active = 'new_project_active'
+    success_url = '/pricing/project/list'
+    form_set_class = ProjectComponentForm
+    related_name = 'components'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = self.title
+        context['pricing_active'] = 'active'
+        context[self.active] = 'active'
+        return context
+
+    def formset_valid(self, formset):
+        relationship = {}
+        for form in formset:
+            element_id = form.cleaned_data['id']
+            amount = form.cleaned_data['amount']
+            relationship.update({element_id: amount})
+        self.object.update_children(relationship)
+
 class TemplateView(GenericTemplateView):
     template_name = ''
     active = ''
@@ -200,3 +234,8 @@ class ProductSearchView(NameSearchView):
 class ComponentSearchView(NameSearchView):
     properties=['id', 'name', 'project_name', 'group']
     model = Component
+
+
+class ProjectSearchView(NameSearchView):
+    properties=['id', 'name', 'leader']
+    model = Project
