@@ -8,6 +8,7 @@ from django.views.generic.edit import (
     ProcessFormView, 
     SingleObjectTemplateResponseMixin, 
 )
+from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import TemplateView as GenericTemplateView
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
@@ -119,7 +120,7 @@ class ObjectSetView(ObjectView):
             self.formset_invalid(formset)
 
 
-class ProductView(ObjectView): 
+class ProductEditView(ObjectView): 
     template_name = 'pricing/edit_product.html'
     model = Product
     form_class = ProductForm
@@ -135,7 +136,7 @@ class ProductView(ObjectView):
         return context
 
 
-class ComponentView(ObjectSetView):
+class ComponentEditView(ObjectSetView):
     template_name = 'pricing/edit_component.html'
     model = Component
     form_class = ComponentForm
@@ -160,7 +161,7 @@ class ComponentView(ObjectSetView):
             relationship.update({element_id: amount})
         self.object.update_children(relationship)
 
-class ProjectView(ObjectSetView):
+class ProjectEditView(ObjectSetView):
     template_name = 'pricing/edit_project.html'
     model = Project
     form_class = ProjectForm
@@ -239,3 +240,18 @@ class ComponentSearchView(NameSearchView):
 class ProjectSearchView(NameSearchView):
     properties=['id', 'name', 'leader']
     model = Project
+
+
+class ComponentDetailsView(SingleObjectMixin, TemplateView):
+    model = Component
+    object = None
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        component = self.get_object()
+        if component is not None:
+            context['name'] = component.name
+            context['project_name'] = component.project_name
+            context['group'] = component.group
+            context['products'] = component.get_all_products(1, component)
+            print(context['products'])
+        return context

@@ -103,8 +103,8 @@ class Product(Element):
         validators=[MinValueValidator(0)]
     ) 
     
-    def get_all_products(self, amount):
-        products = [{"amount": amount, "object": self}]
+    def get_all_products(self, amount, component):
+        products = [{"amount": amount, "object": self, "component": component}]
         return products
 
 
@@ -122,21 +122,21 @@ class Component(Element, Relationship):
         super(Component, self).__init__(*args, **kwargs)
         self.relationship_model = self.relationship
         self.child_model = Element
-        
-    def get_all_products(self, amount):
+
+    def get_all_products(self, amount, component):
         products = []
         for relation in self.relationship.all():
             child = relation.child
             if child.is_component:
                 products.extend(
                     child.component.get_all_products(
-                        relation.amount * amount
+                        relation.amount * amount, component
                     )
                 )
             else:
                 products.extend(
                     child.product.get_all_products(
-                        relation.amount * amount
+                        relation.amount * amount, component
                     )
                 )
         return products

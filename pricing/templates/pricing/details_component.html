@@ -1,0 +1,46 @@
+{% extends "template.html" %}
+
+    {% load staticfiles %}
+
+{% block navigation %}
+{% include "pricing/navigation.html" %}
+{% endblock %}
+
+{% block content %}
+   <div class="card bg-light mx-auto" style="max-width: 60rem;">
+      <div class="text-center">
+          <div class="card-body">
+            <div style="float:left;"><p class="card-text" >Nazwa</p></div>
+            <div style="float:right;"><p class="card-text" >{{ name }}</p></div>
+          </div>
+          <div class="card-body">
+            <div style="float:left;"><p class="card-text" >Nazwa projektu</p></div>
+            <div style="float:right;"><p class="card-text" >{{ project_name }}</p></div>
+          </div>
+          <div class="card-body">
+            <div style="float:left;"><p class="card-text" >Grupa</p></div>
+            <div style="float:right;"><p class="card-text" >{{ group }}</p></div>
+          </div>
+          <div class="card-body" id="details_component">
+            <grouped-table
+                           :rows="rows"
+                           :cols="cols">
+            </grouped-table>
+          </div>
+          <div class="card-body">
+          </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'vue/grouped-table-component.js' %}"></script>
+    <script src="{% static 'js/details_component.js' %}"></script>
+    <script>
+      {% for p in products %}
+        table.add({id: {{p.object.pk}}, name:'{{p.object.name}}', group:'{{p.object.group}}', 
+                   amount:{{p.amount}}, detail_price: {{p.object.price}}, component: '{{p.component.name}}'})
+      {% endfor %}
+    </script>
+{% endblock %}
+

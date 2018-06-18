@@ -10,10 +10,12 @@ var csearch = new Vue({
             {name: 'project_name', display: 'Projekt'},
             {name: 'group', display: 'Grupa'},
         ],
-        buttons: ['edit'],
+        buttons: ['edit', 'info'],
         callbacks: {
             edit: function (row) {
-                console.log(JSON.stringify(row));
+                location.href="/pricing/component/edit/" + row.id;
+            },
+            info: function (row) {
                 location.href="/pricing/component/" + row.id;
             },
         }

@@ -9,10 +9,12 @@ var psearch = new Vue({
             {name: 'name', display: 'Nazwa'},
             {name: 'leader', display: 'Lider'},
         ],
-        buttons: ['edit'],
+        buttons: ['edit', 'info'],
         callbacks: {
             edit: function (row) {
-                console.log(JSON.stringify(row));
+                location.href="/pricing/project/edit/" + row.id;
+            },
+            info: function (row) {
                 location.href="/pricing/project/" + row.id;
             },
         }
