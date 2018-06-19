@@ -45,6 +45,9 @@ Vue.component('search', {
             this.getProducts();
         }
     },
+    mounted: function() {
+        this.getProducts();
+    },
     filters: {
       capitalize: function (str) {
         return str.charAt(0).toUpperCase() + str.slice(1)

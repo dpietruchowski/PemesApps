@@ -36,6 +36,7 @@
             <button type="submit" class="save btn btn-default">Zapisz</button>
             <button type="button" class="save btn btn-default" data-toggle="modal" data-target="#component_modal">Dodaj komponent</button>
             {% if pk is not defined %}
+            <button type="button" class="save btn btn-default" onclick="location.href='/pricing/project/{{pk}}'">Szczegóły</button>
             <button type="button" class="save btn btn-default" onclick="delete_project({{ pk }})">Usuń</button>
             {% endif %}
           </div>

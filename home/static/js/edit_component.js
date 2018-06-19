@@ -61,7 +61,7 @@ var csmodal = new Vue({
 })
 
 function delete_component(id) {
-    fetch("/pricing/component/" + id, {
+    fetch("/pricing/component/edit/" + id, {
         method: 'DELETE',
         credentials: "same-origin",
         headers: {

@@ -233,7 +233,7 @@ class ProductSearchView(NameSearchView):
 
 
 class ComponentSearchView(NameSearchView):
-    properties=['id', 'name', 'project_name', 'group']
+    properties=['id', 'name', 'project_name']
     model = Component
 
 
@@ -249,9 +249,25 @@ class ComponentDetailsView(SingleObjectMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         component = self.get_object()
         if component is not None:
+            context['pk'] = component.pk
             context['name'] = component.name
             context['project_name'] = component.project_name
             context['group'] = component.group
             context['products'] = component.get_all_products(1, component)
+            print(context['products'])
+        return context
+
+class ProjectDetailsView(SingleObjectMixin, TemplateView):
+    model = Project
+    object = None
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project = self.get_object()
+        if project is not None:
+            context['pk'] = project.pk
+            context['name'] = project.name
+            context['leader'] = project.leader
+            context['description'] = project.description
+            context['products'] = project.get_all_products()
             print(context['products'])
         return context

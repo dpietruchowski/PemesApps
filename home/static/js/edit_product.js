@@ -65,7 +65,7 @@ function getCookie(input) {
 };
 
 function delete_product(id) {
-    fetch("/pricing/product/" + id, {
+    fetch("/pricing/product/edit/" + id, {
         method: 'DELETE',
         credentials: "same-origin",
         headers: {

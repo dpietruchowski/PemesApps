@@ -24,13 +24,17 @@ urlpatterns = [
 
   path('component/edit/<int:pk>/', 
        views.ComponentEditView.as_view(title="Edytuj komponent"), 
-       name='edit_component'),
+       name='details_component'),
 
   path('component/new', views.ComponentEditView.as_view(), name='new_component'),
 
   path('project/list', 
        views.TemplateView.as_view(template_name="pricing/list_project.html", active="projects_active"), 
        name='project_list'),
+
+  path('project/<int:pk>/', 
+       views.ProjectDetailsView.as_view(template_name="pricing/details_project.html"), 
+       name='details_project'),
 
   path('project/edit/<int:pk>/', 
        views.ProjectEditView.as_view(title="Edytuj projekt"), 

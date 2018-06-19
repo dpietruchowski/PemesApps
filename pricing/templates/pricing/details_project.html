@@ -14,21 +14,21 @@
             <div style="float:right;"><p class="card-text" >{{ name }}</p></div>
           </div>
           <div class="card-body">
-            <div style="float:left;"><p class="card-text" >Nazwa projektu</p></div>
-            <div style="float:right;"><p class="card-text" >{{ project_name }}</p></div>
+            <div style="float:left;"><p class="card-text" >Lider</p></div>
+            <div style="float:right;"><p class="card-text" >{{ leader }}</p></div>
           </div>
           <div class="card-body">
-            <div style="float:left;"><p class="card-text" >Grupa</p></div>
-            <div style="float:right;"><p class="card-text" >{{ group }}</p></div>
+            <div style="float:left;"><p class="card-text" >Opis</p></div>
+            <div style="float:right;"><p class="card-text" >{{ description }}</p></div>
           </div>
-          <div class="card-body" id="details_component">
+          <div class="card-body" id="details_project">
             <grouped-table
                            :rows="rows"
                            :cols="cols">
             </grouped-table>
           </div>
           <div class="card-body">
-            <button type="button" class="save btn btn-default" onclick="location.href='/pricing/component/edit/{{pk}}'">Edytuj</button>
+            <button type="button" class="save btn btn-default" onclick="location.href='/pricing/project/edit/{{pk}}'">Edytuj</button>
           </div>
       </div>
     </div>
@@ -36,7 +36,7 @@
 
 {% block js %}
     <script src="{% static 'vue/grouped-table-component.js' %}"></script>
-    <script src="{% static 'js/details_component.js' %}"></script>
+    <script src="{% static 'js/details_project.js' %}"></script>
     <script>
       {% for p in products %}
         table.add({id: {{p.object.pk}}, name:'{{p.object.name}}', group:'{{p.object.group}}', 

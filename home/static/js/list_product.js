@@ -10,14 +10,14 @@ var psearch = new Vue({
             {name: 'price', display: 'Cena'},
             {name: 'group', display: 'Grupa'},
         ],
-        buttons: ['edit', 'info'],
+        buttons: ['edit'],
         callbacks: {
             edit: function (row) {
                 location.href="/pricing/product/edit/" + row.id;
             },
-            info: function (row) {
+            /*info: function (row) {
                 location.href="/pricing/product/" + row.id;
-            },
+            },*/
         }
     }
 })

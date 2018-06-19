@@ -61,22 +61,20 @@ class Relationship:
         return False
 
 class Group(Enum):
-    Mechanical = 0
-    Electrical = 1
+    Mechanical = "Mechanika"
+    Electrical = "Elektryka"
+    Pneumatics = "Pneumatyka"
+
+    def __str__(self):
+        return self.value
 
     @classmethod
     def choices(cls):
-        return tuple((x.value, x.name) for x in cls)
-
-    def __int__(self):
-        return self.value
-
-    def __str__(self):
-        return self.name
+        return tuple((x.name, x.value) for x in cls)
 
 class Element(models.Model):
     name = models.CharField(max_length=30)
-    group = models.IntegerField(choices=Group.choices(), default=Group.Electrical)
+    group = models.CharField(max_length=30, choices=Group.choices(), default=Group.Electrical)
     is_component = models.BooleanField()
 
     def __init__(self, *args, **kwargs):
@@ -96,6 +94,7 @@ class Product(Element):
         related_name='product',
         on_delete=models.CASCADE
     )
+    brand = models.CharField(max_length=30)
     price = models.DecimalField(
         decimal_places=2,
         max_digits=15,
@@ -176,6 +175,17 @@ class Project(models.Model, Relationship):
         super(Project, self).__init__(*args, **kwargs)
         self.relationship_model = self.components
         self.child_model = Component
+
+    def get_all_products(self):
+        products = []
+        for relation in self.components.all():
+            child = relation.child
+            products.extend(
+                child.get_all_products(
+                    relation.amount * 1, child
+                )
+            )
+        return products
 
 class ProjectComponent(models.Model):
     parent = models.ForeignKey(

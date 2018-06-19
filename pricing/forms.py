@@ -16,7 +16,7 @@ def get_all_fields(instance):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'group', 'price']
+        fields = ['name', 'brand', 'group', 'price']
 
 
 class ComponentForm(forms.ModelForm):

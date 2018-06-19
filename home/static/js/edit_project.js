@@ -36,7 +36,7 @@ var csmodal = new Vue({
 })
 
 function delete_project(id) {
-    fetch("/pricing/project/" + id, {
+    fetch("/pricing/project/edit/" + id, {
         method: 'DELETE',
         credentials: "same-origin",
         headers: {
