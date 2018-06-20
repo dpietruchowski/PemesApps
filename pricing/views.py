@@ -252,7 +252,6 @@ class ComponentDetailsView(SingleObjectMixin, TemplateView):
             context['pk'] = component.pk
             context['name'] = component.name
             context['project_name'] = component.project_name
-            context['group'] = component.group
             context['products'] = component.get_all_products(1, component)
             print(context['products'])
         return context

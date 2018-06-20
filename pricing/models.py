@@ -70,11 +70,10 @@ class Group(Enum):
 
     @classmethod
     def choices(cls):
-        return tuple((x.name, x.value) for x in cls)
+        return tuple((x.value, x.name) for x in cls)
 
 class Element(models.Model):
     name = models.CharField(max_length=30)
-    group = models.CharField(max_length=30, choices=Group.choices(), default=Group.Electrical)
     is_component = models.BooleanField()
 
     def __init__(self, *args, **kwargs):
@@ -95,6 +94,11 @@ class Product(Element):
         on_delete=models.CASCADE
     )
     brand = models.CharField(max_length=30)
+    group = models.CharField(
+        max_length=30, 
+        choices=Group.choices(), 
+        default=Group.Electrical
+    )
     price = models.DecimalField(
         decimal_places=2,
         max_digits=15,

@@ -22,7 +22,7 @@ class ProductForm(forms.ModelForm):
 class ComponentForm(forms.ModelForm):
     class Meta:
         model = Component
-        fields = ['name', 'group', 'project_name']
+        fields = ['name', 'project_name']
 
 
 class ComponentRelationshipForm(forms.Form):
