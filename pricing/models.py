@@ -57,8 +57,8 @@ class Relationship:
                 if relation.pk in visited:
                     return True
                 visited.add(relation.pk)
-                    if relation.child.component.has_cycle(visited):
-                        return True
+                if relation.child.component.has_cycle(visited):
+                    return True
         return False
 
 class Group(Enum):
