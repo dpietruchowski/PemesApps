@@ -44,6 +44,7 @@ class Relationship:
             self.delete_child(self.child_model.objects.get(pk=child_id))
 
         if self.has_cycle(set()):
+            print("relationship has cycle")
             self.update_children(old_children)
             return False
         
@@ -52,12 +53,12 @@ class Relationship:
     def has_cycle(self, visited):
         #pdb.set_trace()
         for relation in self.relationship_model.all():
-            if relation.pk in visited:
-                return True
-            visited.add(relation.pk)
             if relation.child.is_component:
-                if relation.child.component.has_cycle(visited):
+                if relation.pk in visited:
                     return True
+                visited.add(relation.pk)
+                    if relation.child.component.has_cycle(visited):
+                        return True
         return False
 
 class Group(Enum):
