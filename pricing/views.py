@@ -52,9 +52,13 @@ class BaseObjectView(ModelFormMixin, ProcessFormView):
         return super().post(request, *args, **kwargs)
         
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.delete()
-        return HttpResponseRedirect()
+        response = {'message': 'Usunieto', 'result':True}
+        try:
+            self.object = self.get_object()
+            self.object.delete()
+        except:
+            response = {'message': 'Nie usunieto', 'result':False}
+        return JsonResponse(json.dumps([response]), safe=False)
         
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -113,11 +117,14 @@ class ObjectSetView(ObjectView):
             return Response
         else:
             self.formset_invalid(formset)
+            return super().form_invalid(form)
 
     def form_invalid(self, form):
         formset = self.get_formset_from_request()
         if not formset.is_valid():
             self.formset_invalid(formset)
+        print(form.errors)
+        return super().form_invalid(form)
 
 
 class ProductEditView(ObjectView): 
@@ -145,6 +152,11 @@ class ComponentEditView(ObjectSetView):
     success_url = '/pricing/component/list'
     form_set_class = ComponentRelationshipForm
     related_name = 'relationship'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        #print(kwargs)
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -160,6 +172,7 @@ class ComponentEditView(ObjectSetView):
             amount = form.cleaned_data['amount']
             relationship.update({element_id: amount})
         self.object.update_children(relationship)
+
 
 class ProjectEditView(ObjectSetView):
     template_name = 'pricing/edit_project.html'
@@ -186,6 +199,7 @@ class ProjectEditView(ObjectSetView):
             relationship.update({element_id: amount})
         self.object.update_children(relationship)
 
+
 class TemplateView(GenericTemplateView):
     template_name = ''
     active = ''
@@ -199,6 +213,7 @@ class TemplateView(GenericTemplateView):
 
 class QueryView(View):
     queries = []
+    properties = []
     def get(self, request, *args, **kwargs):
         avaiable = True
         #pdb.set_trace()
@@ -210,31 +225,55 @@ class QueryView(View):
             return self.search(request)
         return JsonResponse(json.dumps([]), safe=False)
 
+    def json_response(self, model_results):
+        results = []
+        for obj in model_results:
+            results.append(self.convert_object(obj))
+        return JsonResponse(json.dumps(results[:10]), safe=False)
+
+    def convert_object(self, obj):
+        obj_dict = {}
+        for prop in self.properties:
+            obj_dict.update({prop: str(getattr(obj, prop))})
+        return obj_dict
+
+
 
 class NameSearchView(QueryView):
     queries = [u'query']
-    properties = []
     model = None
     def search(self, request):
         value = request.GET[u'query']
         model_results = self.model.objects.filter(name__icontains=value)
-        results = []
-        for obj in model_results:
-            obj_dict = {}
-            for prop in self.properties:
-                obj_dict.update({prop: str(getattr(obj, prop))})
-            results.append(obj_dict)
-        return JsonResponse(json.dumps(results[:10]), safe=False)
+        return self.json_response(model_results)
 
 
 class ProductSearchView(NameSearchView):
-    properties=['id', 'name', 'price', 'group']
+    properties=['id', 'name', 'brand', 'price', 'group']
     model = Product
 
 
 class ComponentSearchView(NameSearchView):
-    properties=['id', 'name', 'project_name']
+    properties=['id', 'name']
     model = Component
+
+    def convert_object(self, obj):
+        obj_dict = super().convert_object(obj)
+        obj_dict.update({'project': obj.project.name})
+        return obj_dict
+
+class ProjectComponentsSearchView(QueryView):
+    queries = [u'name', u'project']
+    properties=['id', 'name']
+    def search(self, request):
+        name = request.GET[u'name']
+        project_id = int(request.GET[u'project'])
+        project = Project.objects.get(pk=project_id)
+        if project is None:
+            return self.json_response([])
+        components = project.related_components
+        model_results = components.filter(name__icontains=name)
+        return self.json_response(model_results)
 
 
 class ProjectSearchView(NameSearchView):
@@ -251,7 +290,6 @@ class ComponentDetailsView(SingleObjectMixin, TemplateView):
         if component is not None:
             context['pk'] = component.pk
             context['name'] = component.name
-            context['project_name'] = component.project_name
             context['products'] = component.get_all_products(1, component)
             print(context['products'])
         return context

@@ -18,13 +18,14 @@
             <div style="float:left;"><p class="card-text" >Nazwa</p></div>
             <div style="float:right;"><p class="card-text" >{{ form.name }}</p></div>
           </div>
-          <div class="card-body">
+          <div class="card-body" id="project_input">
             <div style="float:left;"><p class="card-text" >Nazwa projektu</p></div>
-            <div style="float:right;"><p class="card-text" >{{ form.project_name }}</p></div>
-          </div>
-          <div class="card-body">
-            <div style="float:left;"><p class="card-text" >Grupa</p></div>
-            <div style="float:right;"><p class="card-text" >{{ form.group }}</p></div>
+            <div style="float:right;">
+              <p class="card-text" >
+                <project-input ref="pj">
+                </project-input>
+              </p>
+            </div>
           </div>
           <div class="card-body" id="element_formset">
             <dynamic-formset ref="df"
@@ -73,11 +74,18 @@
     <script src="{% static 'vue/component-search-component.js' %}"></script>
     <script src="{% static 'vue/dynamic-formset-component.js' %}"></script>
     <script src="{% static 'vue/dynamic-table-component.js' %}"></script>
+    <script src="{% static 'vue/search-select-component.js' %}"></script>
+    <script src="{% static 'vue/project-input-component.js' %}"></script>
+    <script src="{% static 'js/pricing_utils.js' %}"></script>
     <script src="{% static 'js/edit_component.js' %}"></script>
     <script>
       {% for f in formset %}
-        dform_set.$refs.df.add({'id': {{ f.id.value }}, 'name': '{{ f.name.value }}', 'amount': {{ f.amount.value }} })
+          dform_set.$refs.df.add({'id': {{ f.id.value }}, 'name': '{{ f.name.value }}', 'amount': {{ f.amount.value }} })
       {% endfor %}
-    </script>
+      {% if pk is not defined %}
+          {% load app_filters %}
+          project_input.$refs.pj.select({'name': "{{form.project.value|project_name}}", 'id': {{form.project.value}} })
+      {% endif %}
+      </script>
 {% endblock %}
 

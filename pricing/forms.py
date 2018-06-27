@@ -4,6 +4,7 @@ from .models import (
     Component,
     Project
 )
+import pdb
 
 def get_all_fields(instance):
     fields = list(instance().base_fields)
@@ -22,7 +23,10 @@ class ProductForm(forms.ModelForm):
 class ComponentForm(forms.ModelForm):
     class Meta:
         model = Component
-        fields = ['name', 'project_name']
+        fields = ['name', 'project']
+        #widgets = {
+       #     'project':  forms.Select()
+        #}
 
 
 class ComponentRelationshipForm(forms.Form):

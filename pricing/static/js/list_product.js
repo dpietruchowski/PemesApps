@@ -7,6 +7,7 @@ var psearch = new Vue({
         cols: [
             {name: 'id', display: 'Id'},
             {name: 'name', display: 'Nazwa'},
+            {name: 'brand', display: 'Marka'},
             {name: 'price', display: 'Cena'},
             {name: 'group', display: 'Grupa'},
         ],

@@ -45,8 +45,9 @@
     </div>
 
     <div id="msg_modal">
-      <modal :id="'msg'">
+      <modal :ref="ref" :id="'msg'">
         {{ message }}
+        [[ modal_message ]]
       </modal>
     </div>
 
@@ -57,11 +58,28 @@
     <script src="{% static 'vue/modal-component.js' %}"></script>
     <script>
       var msg_modal = new Vue({
+        delimiters: ['[[', ']]'],
         el: '#msg_modal',
         data: {
-          showModal: true
+          ref: 'm',
+          modal_message: ''
+        },
+        methods: {
+          show: function(msg) {
+            this.modal_message = msg;
+            this.$refs[this.ref].show();
+          },
+          hide: function() {
+            this.$refs[this.ref].hide();
+          },
+          toggle: function() {
+            this.$refs[this.ref].toggle();
+          }
         }
-      })  
+      })
+      {% if message is not defined %}
+        msg_modal.show();
+      {% endif %}
     </script>
       {% block js %}
       {% endblock %}

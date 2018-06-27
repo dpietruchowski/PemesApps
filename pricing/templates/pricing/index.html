@@ -1,9 +1,162 @@
-﻿{% extends "template.html" %}
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-{% block navigation %}
-{% include "pricing/navigation.html" %}
-{% endblock %}
+    <title>Pemes Apps</title>
+    
 
-{% block content %}
-	<h1>Wycena</h1>
-{% endblock %}
+    <!-- Bootstrap core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="/static/css/starter-template.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.12/css/all.css" integrity="sha384-G0fIWCsCzJIMAVNQPfjH08cyYaUtMwjJwqiRKxxE/rx96Uroj1BtIQ6MLJuheaO9" crossorigin="anonymous">
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="/">Pemes Apps</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="/pricing">Wycena</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">   
+        <nav class="navbar bg-light col-sm-3 col-md-2 d-block">
+          
+      
+        
+      <ul class="navbar-nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link  p-2" href="/pricing/product/new">Dodaj produkt</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link   p-2" href="/pricing/product/list">Produkty</a>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link active  p-2" href="/pricing/component/new">Dodaj komponent</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link   p-2" href="/pricing/component/list">Komponenty</a>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link   p-2" href="/pricing/project/new">Dodaj projekt</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link   p-2" href="/pricing/project/list">Projekty</a>
+        </li>
+      </ul>
+
+        </nav>
+        <main role="main" class="col-sm-9 col-md-10">
+          
+   <div class="card bg-light mx-auto" style="max-width: 30rem;">
+      <div class="text-center">
+        <form method="POST" class="post-form" @submit="checkForm">
+          <input type='hidden' name='csrfmiddlewaretoken' value='ZgWQU4aUb5TtvlkCKxbSVSGk7q7Y5F73zCjq5o2Ga2PdrVMt1gbt39Fmo7uv5xPv' />
+          <div class="card-body">
+            <h4 class="card-title">Dodaj komponent</h4>
+          </div>
+          <div class="card-body">
+            <div style="float:left;"><p class="card-text" >Nazwa</p></div>
+            <div style="float:right;"><p class="card-text" ><input type="text" name="name" maxlength="30" required id="id_name" /></p></div>
+          </div>
+          <div class="card-body">
+            <div style="float:left;"><p class="card-text" >Nazwa projektu</p></div>
+            <div style="float:right;"><p class="card-text" ><input type="text" name="project_name" maxlength="30" required id="id_project_name" /></p></div>
+          </div>
+          <div class="card-body">
+            <div style="float:left;"><p class="card-text" >Grupa</p></div>
+            <div style="float:right;"><p class="card-text" ></p></div>
+          </div>
+          <div class="card-body" id="element_formset">
+            <dynamic-formset ref="df"
+                                :form_prefix="prefix"
+                                :cols="cols">
+            </dynamic-formset>
+          </div>
+          <div class="card-body">
+            <button type="submit" class="save btn btn-default">Zapisz</button>
+            <button type="button" class="save btn btn-default" data-toggle="modal" data-target="#product_modal">Dodaj produkt</button>
+            <button type="button" class="save btn btn-default" data-toggle="modal" data-target="#component_modal">Dodaj komponent</button>
+            
+          </div>
+        </form>
+        <div id="psearch_modal">
+            <modal :id="'product_modal'">
+                <template slot="header">
+                  Dodaj produkt
+                </template>
+                <product-search :cols="cols"
+                                :buttons="buttons"
+                                :callbacks="callbacks">
+                </product-search>
+            </modal>
+        </div>
+        <div id="csearch_modal">
+            <modal :id="'component_modal'">
+                <template slot="header">
+                  Dodaj komponent
+                </template>
+                <component-search :cols="cols"
+                                :buttons="buttons"
+                                :callbacks="callbacks">
+                </component-search>
+            </modal>
+        </div>
+    </div>
+		</div>
+
+        </main><!-- /.container -->
+      </div>
+    </div>
+
+    <div id="msg_modal">
+      <modal2 :id="'msg'" :isHidden="showModal">
+        
+      </modal2>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/vue/modal-component.js"></script>
+    <script>
+      var msg_modal = new Vue({
+        el: '#msg_modal',
+        data: {
+          showModal: true
+        }
+      })  
+    </script>
+      
+    <script src="/static/vue/search-component.js"></script>
+    <script src="/static/vue/product-search-component.js"></script>
+    <script src="/static/vue/component-search-component.js"></script>
+    <script src="/static/vue/dynamic-formset-component.js"></script>
+    <script src="/static/vue/dynamic-table-component.js"></script>
+    <script src="/static/js/edit_component.js"></script>
+    <script>
+      
+    </script>
+
+  </body>
+</html>

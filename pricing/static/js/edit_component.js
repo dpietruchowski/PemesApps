@@ -44,8 +44,7 @@ var csmodal = new Vue({
         cols: [
             {name: 'id', display: 'Id'},
             {name: 'name', display: 'Nazwa'},
-            {name: 'project_name', display: 'Projekt'},
-            {name: 'group', display: 'Grupa'},
+            {name: 'project', display: 'Projekt'},
         ],
         buttons: ['plus'],
         callbacks: {
@@ -60,17 +59,13 @@ var csmodal = new Vue({
     }
 })
 
-function delete_component(id) {
-    fetch("/pricing/component/edit/" + id, {
-        method: 'DELETE',
-        credentials: "same-origin",
-        headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-        },
-    })
-    .then(resp => resp.json())
-    .then(resp => {
-        location.href="/pricing/component/list";
-    })
-}
+var project_input = new Vue({
+    el: '#project_input',
+    data: {
+        choosen: null
+    },
+    components: {
+        'project-input': project_input_component
+    },
+});
     

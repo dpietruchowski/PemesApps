@@ -47,6 +47,7 @@ urlpatterns = [
   # REST API
   path('products', views.ProductSearchView.as_view(), name='products'),
   path('components', views.ComponentSearchView.as_view(), name='components'),
+  path('components', views.ProjectComponentsSearchView.as_view(), name='project_components'),
   path('projects', views.ProjectSearchView.as_view(), name='projects'),
   #path('dependency', views.dependency, name='dependency'),
 ]

@@ -82,9 +82,6 @@ class Element(models.Model):
         if not self.pk and not self.is_component:
             self.is_component = self.IS_COMPONENT
 
-    class Meta:
-        unique_together = ('is_component', 'name')
-
 
 class Product(Element):
     IS_COMPONENT = False
@@ -105,12 +102,37 @@ class Product(Element):
         max_digits=15,
         default=0,
         validators=[MinValueValidator(0)]
-    ) 
+    )
     
     def get_all_products(self, amount, component):
         products = [{"amount": amount, "object": self, "component": component}]
         return products
 
+
+class Project(models.Model, Relationship):
+    name = models.CharField(max_length=30)
+    leader = models.CharField(max_length=35)
+    description = models.TextField()
+    
+    class Meta:
+        unique_together = ['name', 'leader']
+
+    def __init__(self, *args, **kwargs):
+        super(Project, self).__init__(*args, **kwargs)
+        self.relationship_model = self.components
+        self.child_model = Component
+
+    def get_all_products(self):
+        products = []
+        for relation in self.components.all():
+            child = relation.child
+            products.extend(
+                child.get_all_products(
+                    relation.amount * 1, child
+                )
+            )
+        return products
+        
 
 class Component(Element, Relationship):
     IS_COMPONENT = True
@@ -120,7 +142,11 @@ class Component(Element, Relationship):
         related_name='component',
         on_delete=models.CASCADE
     )
-    project_name = models.CharField(max_length=30, default="")
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="related_components"
+    )
 
     def __init__(self, *args, **kwargs):
         super(Component, self).__init__(*args, **kwargs)
@@ -170,27 +196,6 @@ class ElementRelationship(models.Model):
     class Meta:
         unique_together = ('parent', 'child')
 
-
-class Project(models.Model, Relationship):
-    name = models.CharField(max_length=30)
-    leader = models.CharField(max_length=35)
-    description = models.TextField()
-
-    def __init__(self, *args, **kwargs):
-        super(Project, self).__init__(*args, **kwargs)
-        self.relationship_model = self.components
-        self.child_model = Component
-
-    def get_all_products(self):
-        products = []
-        for relation in self.components.all():
-            child = relation.child
-            products.extend(
-                child.get_all_products(
-                    relation.amount * 1, child
-                )
-            )
-        return products
 
 class ProjectComponent(models.Model):
     parent = models.ForeignKey(
