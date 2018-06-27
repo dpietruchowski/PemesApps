@@ -16,6 +16,45 @@ Vue.component('grouped-table', {
         return col.name === groupBy;
       });
     },
+    sortedCols: function() {
+      return this.cols.slice().sort(function(a, b){
+        a = a.isValue;
+        b = b.isValue;
+        return a === b ? 0 : a < b ? -1 : 1;
+      });
+    },
+    groupedCols: function () {
+      return this.sortedCols.filter(function(col){
+        return col.canBeGrouped;
+      })
+    },
+    notValuedCols: function() {
+      return this.sortedCols.filter(function(row){
+        return !row.isValue;
+      })
+    },
+    valuedCols: function () {
+      return this.sortedCols.filter(function(row){
+        return row.isValue;
+      })
+    }
+  },
+  filters: {
+    capitalize: function (str) {
+      return str.charAt(0).toUpperCase() + str.slice(1)
+    }
+  },
+  methods: {
+    filteredRows: function() {
+    	var groupedMap = this.groupedMap();
+      var rows = [];
+      groupedMap.forEach(function(value, key) {
+        if(this.groupBy !== 'id')
+          rows.push(key);
+        rows = rows.concat(value);
+      }, this)
+      return rows;
+    },
     groupedMap: function () {
       var cols = this.cols;
       var rows = this.rows;
@@ -52,45 +91,6 @@ Vue.component('grouped-table', {
       }
       return groupedMap;
     },
-    filteredRows: function() {
-    	var groupedMap = this.groupedMap;
-      var rows = [];
-      groupedMap.forEach(function(value, key) {
-        if(this.groupBy !== 'id')
-          rows.push(key);
-        rows = rows.concat(value);
-      }, this)
-      return rows;
-    },
-    sortedCols: function() {
-      return this.cols.slice().sort(function(a, b){
-        a = a.isValue;
-        b = b.isValue;
-        return a === b ? 0 : a < b ? -1 : 1;
-      });
-    },
-    groupedCols: function () {
-      return this.sortedCols.filter(function(col){
-        return col.canBeGrouped;
-      })
-    },
-    notValuedCols: function() {
-      return this.sortedCols.filter(function(row){
-        return !row.isValue;
-      })
-    },
-    valuedCols: function () {
-      return this.sortedCols.filter(function(row){
-        return row.isValue;
-      })
-    }
-  },
-  filters: {
-    capitalize: function (str) {
-      return str.charAt(0).toUpperCase() + str.slice(1)
-    }
-  },
-  methods: {
     rowStyle: function(row) {
       if(row.isHeader)
         return "background-color: #ccccb3;";
@@ -114,7 +114,7 @@ Vue.component('grouped-table', {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in filteredRows" :style="rowStyle(row)">
+          <tr v-for="row in filteredRows()" :style="rowStyle(row)">
             <td v-for="col in sortedCols" v-if="!row.isHeader">
               [[ row[col.name] ]]
             </td>
