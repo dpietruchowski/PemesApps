@@ -145,7 +145,8 @@ class Component(Element, Relationship):
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
-        related_name="related_components"
+        related_name="related_components",
+        blank=True, null=True
     )
 
     def __init__(self, *args, **kwargs):

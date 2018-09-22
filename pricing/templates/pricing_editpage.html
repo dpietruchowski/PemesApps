@@ -1,0 +1,22 @@
+{% extends "template.html" %}
+{% load staticfiles %}
+
+{% block navigation %}
+{% include "pricing_navigation.html" %}
+{% endblock %}
+
+{% block content %}
+{% load render_bundle from webpack_loader %}
+{% load app_filters %}
+
+<div id="page">
+    {% if pk is not defined %}
+    <edit-form csrftoken="{{ csrf_token }}" :pk="{{ pk }}" :form="{{ form_array }}" :formset="{{ formset_list }}">
+    {% else %}
+    <edit-form csrftoken="{{ csrf_token }}">
+    {% endif %}
+    </edit-form>
+</div>
+
+{% render_bundle page %}
+{% endblock %}

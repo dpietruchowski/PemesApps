@@ -1,6 +1,8 @@
 from django import template
 from pricing.models import Project
 
+import pdb
+
 register = template.Library()
 
 @register.filter(name='project_name')

@@ -10,7 +10,8 @@
     <div class="card bg-light mx-auto" style="max-width: 30rem;">
       <div class="text-center">
         <form method="POST" class="post-form" @submit="checkForm">
-          {% csrf_token %}
+          <slot name="csrf_token">
+          </slot>
           <div class="card-body">
             <h4 class="card-title">{{ title }}</h4>
           </div>
@@ -19,16 +20,7 @@
             <div style="float:right;"><p class="card-text" >{{ form.name }}</p></div>
           </div>
           <div class="card-body">
-            <div style="float:left;"><p class="card-text" >Marka</p></div>
-            <div style="float:right;"><p class="card-text" >{{ form.brand }}</p></div>
-          </div>
-          <div class="card-body">
-            <div style="float:left;"><p class="card-text" >Cena</p></div>
-            <div style="float:right;"><p class="card-text" >{{ form.price }}</p></div>
-          </div>
-          <div class="card-body">
-            <div style="float:left;"><p class="card-text" >Grupa</p></div>
-            <div style="float:right;"><p class="card-text" >{{ form.group }}</p></div>
+            <slot></slot>
           </div>
           <div class="card-body">
             <button type="submit" class="save btn btn-default">Zapisz</button>

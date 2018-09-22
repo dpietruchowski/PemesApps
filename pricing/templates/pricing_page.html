@@ -1,4 +1,4 @@
-﻿{% extends "template.html" %}
+{% extends "template.html" %}
 {% load staticfiles %}
 
 {% block navigation %}
@@ -6,4 +6,10 @@
 {% endblock %}
 
 {% block content %}
+{% load render_bundle from webpack_loader %}
+
+<div id="page">
+</div>
+
+{% render_bundle page %}
 {% endblock %}
